@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>.:: Dashboard - PQR ::.</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="css/my-login.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <style>
+   .modal-mask {
+     position: fixed;
+     z-index: 9998;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background-color: rgba(0, 0, 0, .5);
+     display: table;
+     transition: opacity .3s ease;
+   }
+
+   .modal-wrapper {
+     display: table-cell;
+     vertical-align: middle;
+   }
+  </style>
+ </head>
+ <body>
+  <div class="container" id="crudApp">
+   <br />
+
+   <table>
+     <tr>
+       <td>
+        <h3 align="center">PQR - Listado general</h3> 
+       </td>
+       <td>
+        <div class="col-md-6" align="right">
+          <input type="button" class="btn btn-success btn-link" @click="finalizaSesion" value="Salir" />
+        </div>
+       </td>
+     </tr>
+   </table>
+  
+  <br/>
+
+   <div class="panel panel-default">
+    <div class="panel-heading">
+
+      <table style="width:100%;text-align: center;">
+        <tr>
+          <td>
+            <input v-if="isAdmin" type="button" class="btn btn-success btn-lg" value="Ver Reporte" 
+            onclick="document.getElementById('report-link').click()"/>
+          </td>
+          <td>
+            <a target="_blank" href="http://localhost:8090/pqr/report" id="report-link"></a>
+          </td>
+          <td>
+            <span v-if="isAdmin">
+              <input type="button" class="btn btn-success btn-lg" @click="openModel" value="Agregar" />
+            </span>
+          </td>
+        </tr>
+      </table>
+
+    </div>
+    <div class="panel-body">
+     <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+       <tr>
+        <td v-if="isAdmin">Acciones</th>
+        <th>Asunto</th>
+        <th>Tipo</th>
+        <th>Estado</th>
+        <th>Usuario</th>
+        <th>Fecha de Creacion</th>
+        <th>Fecha Limite</th>
+        <th>Vigencia</th>
+       </tr>
+       <tr v-for="row in allData">
+        <td v-if="isAdmin">
+            <button type="button" name="edit" class="btn btn-primary btn-xs edit" @click="fetchData(row.id)">Edit</button>
+            <button type="button" name="delete" class="btn btn-danger btn-xs delete" @click="deleteData(row.id)">Delete</button>
+        </td>
+        <td>{{ row.asunto }}</td>
+        <td>{{ row.tipo }}</td>
+        <td>{{ row.estado }}</td>
+        <td>{{ row.usuario.username }}</td>
+        <td>{{ row.fechaCreacion.length >10 ? row.fechaCreacion.substr(0,10) : row.fechaCreacion.length }}</td>
+        <td>{{ row.fechaLimite.length >10 ? row.fechaLimite.substr(0,10) : row.fechaLimite.length }}</td>
+        <td>{{ row.vigencia }}</td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div v-if="myModel">
+    <transition name="model">
+     <div class="modal-mask">
+      <div class="modal-wrapper">
+       <div class="modal-dialog">
+        <div class="modal-content">
+         <div class="modal-header">
+          <button type="button" class="close" @click="myModel=false"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">{{ dynamicTitle }}</h4>
+         </div>
+         <div class="modal-body">
+          
+          <div class="form-group">
+           <label>Asunto</label>
+           <textarea id="asunto" type="text" class="form-control" v-model="asunto" ></textarea>
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="tipo" v-model="tipo">
+                <option disabled value="">Seleccione un elemento</option>
+                <option value="PETICION">Peticion</option>
+                <option value="RECLAMO">Reclamo</option>
+                <option value="QUEJA">Queja</option>
+              </select>
+           </div>
+           <div class="form-group">
+            <label>Estado</label>
+            <select id="estado" v-model="estado">
+                <option disabled value="">Seleccione un elemento</option>
+                <option value="NUEVO">Nuevo</option>
+                <option value="EN_EJECUCION">En ejecucion</option>
+                <option value="CERRADO">Cerrado</option>
+              </select>
+           </div>
+           <div class="form-group">
+            <label>Usuario</label>
+            <select id="usuario" v-model="usuario">
+                <option v-for="user in users" >{{ user.username }}</option>
+            </select>
+           </div>
+           <div class="form-group" v-if="actionButton === 'Guardar'">
+            <label>Fecha Creacion</label>
+            <input type="date" class="form-control" v-model="fechaCreacion" />
+           </div>
+          <br />
+          <div align="center">
+           <input type="hidden" v-model="hiddenId" />
+           <input type="button" class="btn btn-success btn-xs" v-model="actionButton" @click="submitData" />
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </transition>
+   </div>
+  </div>
+ </body>
+</html>
+
+<script src="js/pqr.js"></script>
